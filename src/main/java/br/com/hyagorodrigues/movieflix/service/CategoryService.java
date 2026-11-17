@@ -18,12 +18,7 @@ public class CategoryService {
     }
 
     public List<Category> findAll() {
-        List<Category> categories = repository.findAll();
-        categories.stream()
-                .map( category -> CategoryMapper.toCategoryResponse(category))
-                .toList();
-
-        return cate
+        return repository.findAll();
     }
 
     public Optional<Category> findById(Long id) {
