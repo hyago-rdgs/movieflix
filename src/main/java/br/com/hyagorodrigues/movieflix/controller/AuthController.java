@@ -6,12 +6,14 @@ import br.com.hyagorodrigues.movieflix.controller.request.UserRequest;
 import br.com.hyagorodrigues.movieflix.controller.response.LoginResponse;
 import br.com.hyagorodrigues.movieflix.controller.response.UserResponse;
 import br.com.hyagorodrigues.movieflix.entity.User;
+import br.com.hyagorodrigues.movieflix.exception.UsernameOrPasswordInvalidException;
 import br.com.hyagorodrigues.movieflix.mapper.UserMapper;
 import br.com.hyagorodrigues.movieflix.service.UserService;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,12 +45,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.email(), request.password());
-        Authentication authentication = authenticationManager.authenticate(userAndPass);
+        try {
+            UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.email(), request.password());
+            Authentication authentication = authenticationManager.authenticate(userAndPass);
 
-        User user = (User) authentication.getPrincipal();
-        String token = tokenService.generateToken(user);
+            User user = (User) authentication.getPrincipal();
+            String token = tokenService.generateToken(user);
 
-        return ResponseEntity.ok(new LoginResponse(token));
+            return ResponseEntity.ok(new LoginResponse(token));
+        } catch (BadCredentialsException e) {
+            throw new UsernameOrPasswordInvalidException("User or password invalid!");
+        }
     }
 }
